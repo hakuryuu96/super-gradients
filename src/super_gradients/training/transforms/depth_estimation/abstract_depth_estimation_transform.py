@@ -2,6 +2,7 @@ import abc
 
 from super_gradients.training.samples import DepthEstimationSample
 
+
 class AbstractDepthEstimationTransform(abc.ABC):
     """
     Base class for all transforms for depth estimation sample augmentation.

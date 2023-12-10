@@ -28,32 +28,21 @@ class ReDWebDepthEstimationDataset(AbstractDepthEstimationDataset):
     def __init__(
         self,
         data_dir: str,
-        transforms: List[AbstractDepthEstimationTransform]=[],
-        images_dir: str='Imgs',
-        targets_dir: str='RDs',
-        image_extension: str='jpg',
-        target_extension: str='png'
+        transforms: List[AbstractDepthEstimationTransform] = [],
+        images_dir: str = "Imgs",
+        targets_dir: str = "RDs",
+        image_extension: str = "jpg",
+        target_extension: str = "png",
     ):
-        """
-
-        """
-        super().__init__(
-            transforms=transforms
-        )
+        """ """
+        super().__init__(transforms=transforms)
         self.data_dir = data_dir
         self.images_dir = images_dir
         self.targets_dir = targets_dir
         self.image_extension = image_extension
         self.target_extension = target_extension
 
-        self.pair_names = [
-            name.split('.')[0] for name in os.listdir(
-                os.path.join(
-                    self.data_dir,
-                    self.targets_dir
-                )
-            )
-        ]
+        self.pair_names = [name.split(".")[0] for name in os.listdir(os.path.join(self.data_dir, self.targets_dir))]
 
     def __len__(self):
         return len(self.pair_names)
@@ -61,12 +50,8 @@ class ReDWebDepthEstimationDataset(AbstractDepthEstimationDataset):
     def load_sample(self, index: int) -> DepthEstimationSample:
         pair_name = self.pair_names[index]
 
-        image = Image.open(
-            os.path.join(self.data_dir, self.images_dir, f"{pair_name}.{self.image_extension}")
-        ).convert("RGB")
+        image = Image.open(os.path.join(self.data_dir, self.images_dir, f"{pair_name}.{self.image_extension}")).convert("RGB")
 
-        depth_map = Image.open(
-            os.path.join(self.data_dir, self.targets_dir, f"{pair_name}.{self.target_extension}")
-        )
+        depth_map = Image.open(os.path.join(self.data_dir, self.targets_dir, f"{pair_name}.{self.target_extension}"))
 
         return DepthEstimationSample(image=image, depth_map=depth_map)

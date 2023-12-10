@@ -84,10 +84,7 @@ class AlbumentationsAdaptor(TransformsPipelineAdaptorBase):
             sample = SegmentationSample(image=Image.fromarray(sample["image"]), mask=Image.fromarray(sample["mask"]))
 
         elif self.sample_type == SampleType.DEPTH_ESTIMATION:
-            sample = DepthEstimationSample(
-                image=Image.fromarray(sample["image"]),
-                depth_map=Image.fromarray(sample["mask"])
-            )
+            sample = DepthEstimationSample(image=Image.fromarray(sample["image"]), depth_map=Image.fromarray(sample["mask"]))
 
         else:
             sample = sample["image"]

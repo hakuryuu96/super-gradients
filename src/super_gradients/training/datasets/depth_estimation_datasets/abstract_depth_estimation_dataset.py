@@ -15,10 +15,7 @@ class AbstractDepthEstimationDataset(Dataset):
     Attemting to follow principles provided in pose_etimation_dataset.
     """
 
-    def __init__(
-        self,
-        transforms: List[AbstractDepthEstimationTransform]=[]
-    ):
+    def __init__(self, transforms: List[AbstractDepthEstimationTransform] = []):
         super().__init__()
         self.transforms = transforms
 

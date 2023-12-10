@@ -17,19 +17,13 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
             "images_dir": "Imgs",
             "targets_dir": "RDs",
             "image_extension": "jpg",
-            "target_extension": "png"
+            "target_extension": "png",
         }
         self.transform_params = {
             "transforms": [
                 {
                     "Albumentations": {
-                        "Compose": {
-                            "transforms":
-                            [
-                                {"VerticalFlip": {"p": 1.0}},
-                                {"InvertImg": {"p": 1.0}}
-                            ]
-                        },
+                        "Compose": {"transforms": [{"VerticalFlip": {"p": 1.0}}, {"InvertImg": {"p": 1.0}}]},
                     }
                 }
             ]
@@ -52,10 +46,7 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
         self.assertTrue(isinstance(sample.depth_map.getpixel((0, 0)), int))
 
     def test_smoke_dataset_with_augmentations(self):
-        params_with_augs = {
-            **self.transform_params,
-            **self.default_dataset_params
-        }
+        params_with_augs = {**self.transform_params, **self.default_dataset_params}
         d = ReDWebDepthEstimationDataset(**params_with_augs)
         self.assertTrue(isinstance(d[0], DepthEstimationSample))
         self.assertTrue(isinstance(d[1], DepthEstimationSample))
@@ -74,25 +65,19 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
             image = np.zeros((h_in, w_in, 3), dtype=np.uint8)
             depth_map = np.zeros((h_in, w_in), dtype=np.uint8)
 
-            image[h_in//2:, ...] += 255
-            depth_map[h_in//2:, ...] += 1
+            image[h_in // 2 :, ...] += 255
+            depth_map[h_in // 2 :, ...] += 1
 
             # saving image to png not to lose in image quality
             cv2.imwrite(os.path.join(data_dir, "Imgs", "test.png"), image)
             cv2.imwrite(os.path.join(data_dir, "RDs", "test.png"), depth_map)
 
-            params_with_augs = {
-                **self.transform_params,
-                **self.default_dataset_params
-            }
+            params_with_augs = {**self.transform_params, **self.default_dataset_params}
 
-            params_with_augs['data_dir'] = data_dir
-            params_with_augs['image_extension'] = 'png'
-            params_with_augs['transforms'][0]['Albumentations']['Compose']['transforms'].insert(
-                0,
-                {
-                    "Resize": {"p": 1.0, "height": h_out, "width": w_out, "interpolation": cv2.INTER_NEAREST}
-                }
+            params_with_augs["data_dir"] = data_dir
+            params_with_augs["image_extension"] = "png"
+            params_with_augs["transforms"][0]["Albumentations"]["Compose"]["transforms"].insert(
+                0, {"Resize": {"p": 1.0, "height": h_out, "width": w_out, "interpolation": cv2.INTER_NEAREST}}
             )
             d = ReDWebDepthEstimationDataset(**params_with_augs)
 
@@ -103,7 +88,7 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
             self.assertTrue(isinstance(sample.depth_map.getpixel((0, 0)), int))
 
             expected_dm = np.zeros((h_out, w_out))
-            expected_dm[:h_out//2, ...] += 1
+            expected_dm[: h_out // 2, ...] += 1
 
             # check that depth map just flipped vertically
             self.assertTrue(np.allclose(sample.depth_map, expected_dm))
@@ -114,7 +99,5 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
 
             # and invert(vflip(img)) == img
             expected_image = np.zeros((h_out, w_out, 3))
-            expected_image[h_out//2:, ...] += 255
+            expected_image[h_out // 2 :, ...] += 255
             self.assertTrue(np.allclose(sample.image, expected_image))
-
-
