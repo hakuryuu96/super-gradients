@@ -5,6 +5,7 @@ import random
 
 from torch.utils.data.dataloader import Dataset
 from super_gradients.training.samples import DepthEstimationSample
+from super_gradients.training.transforms.depth_estimation import AbstractDepthEstimationTransform
 
 
 class AbstractDepthEstimationDataset(Dataset):
@@ -16,9 +17,10 @@ class AbstractDepthEstimationDataset(Dataset):
 
     def __init__(
         self,
-        transforms: List[AbstractDepthEstimationTransform]
+        transforms: List[AbstractDepthEstimationTransform]=[]
     ):
-        pass
+        super().__init__()
+        self.transforms = transforms
 
     @abc.abstractmethod
     def load_sample(self, index: int) -> DepthEstimationSample:
@@ -36,5 +38,6 @@ class AbstractDepthEstimationDataset(Dataset):
 
     def __getitem__(self, index: int) -> DepthEstimationSample:
         sample = self.load_sample(index)
-        sample = self.transforms.apply_to_sample(sample)
+        for transform in self.transforms:
+            sample = transform.apply_to_sample(sample)
         return sample

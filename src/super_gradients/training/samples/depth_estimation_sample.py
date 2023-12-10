@@ -18,7 +18,7 @@ class DepthEstimationSample:
     :param depth_map:          Depth map of [H, W] shape.
     """
 
-    __slots__ = ["image", "mask"]
+    __slots__ = ["image", "depth_map"]
 
     image: Union[np.ndarray, torch.Tensor]
     depth_map: Union[np.ndarray, torch.Tensor]

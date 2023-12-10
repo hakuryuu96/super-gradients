@@ -40,6 +40,8 @@ class Transforms:
     """Static class holding all the supported transform names"""
 
     # From SG
+    SegNormalize = "SegNormalize"
+    SegToTensor = "SegToTensor"
     SegRandomFlip = "SegRandomFlip"
     SegResize = "SegResize"
     SegRescale = "SegRescale"
@@ -421,6 +423,7 @@ class Datasets:
     PASCAL_VOC_AND_AUG_UNIFIED_DATASET = "PascalVOCAndAUGUnifiedDataset"
     COCO_KEY_POINTS_DATASET = "COCOKeypointsDataset"
     COCO_POSE_ESTIMATION_DATASET = "COCOPoseEstimationDataset"
+    REDWEB_DEPTH_ESTIMATION_DATASET = "ReDWebDepthEstimationDataset"
 
 
 class Processings:

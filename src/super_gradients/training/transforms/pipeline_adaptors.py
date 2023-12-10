@@ -2,12 +2,14 @@ from enum import Enum
 from typing import Callable
 from abc import abstractmethod, ABC
 import numpy as np
-
-from super_gradients.training.samples import DetectionSample
+from PIL import Image
+from super_gradients.training.samples import DetectionSample, SegmentationSample, DepthEstimationSample
 
 
 class SampleType(Enum):
     DETECTION = "DETECTION"
+    SEGMENTATION = "SEGMENTATION"
+    DEPTH_ESTIMATION = "DEPTH_ESTIMATION"
     IMAGE_ONLY = "IMAGE_ONLY"
 
 
@@ -36,6 +38,10 @@ class AlbumentationsAdaptor(TransformsPipelineAdaptorBase):
     def __call__(self, sample, *args, **kwargs):
         if isinstance(sample, DetectionSample):
             self.sample_type = SampleType.DETECTION
+        elif isinstance(sample, SegmentationSample):
+            self.sample_type = SampleType.SEGMENTATION
+        elif isinstance(sample, DepthEstimationSample):
+            self.sample_type = SampleType.DEPTH_ESTIMATION
         else:
             self.sample_type = SampleType.IMAGE_ONLY
 
@@ -50,6 +56,11 @@ class AlbumentationsAdaptor(TransformsPipelineAdaptorBase):
     def prep_for_transforms(self, sample):
         if self.sample_type == SampleType.DETECTION:
             sample = {"image": sample.image, "bboxes": sample.bboxes_xyxy, "labels": sample.labels, "is_crowd": sample.is_crowd}
+        elif self.sample_type == SampleType.SEGMENTATION:
+            sample = {"image": np.array(sample.image), "mask": np.array(sample.mask)}
+        elif self.sample_type == SampleType.DEPTH_ESTIMATION:
+            # here "mask" is used instead of "depth_map", label_fileds in A.Compose worth being discussed
+            sample = {"image": np.array(sample.image), "mask": np.array(sample.depth_map)}
         else:
             sample = {"image": np.array(sample)}
         return sample
@@ -62,11 +73,23 @@ class AlbumentationsAdaptor(TransformsPipelineAdaptorBase):
                 sample["labels"] = np.zeros((0))
             if len(sample["is_crowd"]) == 0:
                 sample["is_crowd"] = np.zeros((0))
-            return DetectionSample(
+            sample = DetectionSample(
                 image=sample["image"],
                 bboxes_xyxy=np.array(sample["bboxes"]),
                 labels=np.array(sample["labels"]),
                 is_crowd=np.array(sample["is_crowd"]),
                 additional_samples=None,
             )
-        return sample["image"]
+        elif self.sample_type == SampleType.SEGMENTATION:
+            sample = SegmentationSample(image=Image.fromarray(sample["image"]), mask=Image.fromarray(sample["mask"]))
+
+        elif self.sample_type == SampleType.DEPTH_ESTIMATION:
+            sample = DepthEstimationSample(
+                image=Image.fromarray(sample["image"]),
+                depth_map=Image.fromarray(sample["mask"])
+            )
+
+        else:
+            sample = sample["image"]
+
+        return sample
