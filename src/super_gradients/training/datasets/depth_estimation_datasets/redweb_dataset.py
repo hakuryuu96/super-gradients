@@ -2,7 +2,7 @@ import os
 
 from typing import List
 
-from PIL import Image
+import cv2
 
 from super_gradients.training.datasets.depth_estimation_datasets import AbstractDepthEstimationDataset
 from super_gradients.training.transforms.depth_estimation import AbstractDepthEstimationTransform
@@ -50,8 +50,8 @@ class ReDWebDepthEstimationDataset(AbstractDepthEstimationDataset):
     def load_sample(self, index: int) -> DepthEstimationSample:
         pair_name = self.pair_names[index]
 
-        image = Image.open(os.path.join(self.data_dir, self.images_dir, f"{pair_name}.{self.image_extension}")).convert("RGB")
+        image = cv2.imread(os.path.join(self.data_dir, self.images_dir, f"{pair_name}.{self.image_extension}"), cv2.IMREAD_COLOR)
 
-        depth_map = Image.open(os.path.join(self.data_dir, self.targets_dir, f"{pair_name}.{self.target_extension}"))
+        depth_map = cv2.imread(os.path.join(self.data_dir, self.targets_dir, f"{pair_name}.{self.target_extension}"), cv2.IMREAD_GRAYSCALE)
 
         return DepthEstimationSample(image=image, depth_map=depth_map)

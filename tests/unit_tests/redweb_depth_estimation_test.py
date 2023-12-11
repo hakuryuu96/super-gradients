@@ -40,10 +40,8 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
         d = ReDWebDepthEstimationDataset(**self.default_dataset_params)
         sample = d[0]
         self.assertTrue(isinstance(sample, DepthEstimationSample))
-        self.assertTrue(len(sample.image.size) == 2)
-        self.assertTrue(len(sample.image.getpixel((0, 0))) == 3)
-        self.assertTrue(len(sample.depth_map.size) == 2)
-        self.assertTrue(isinstance(sample.depth_map.getpixel((0, 0)), int))
+        self.assertTrue(len(sample.image.shape) == 3)
+        self.assertTrue(len(sample.depth_map.shape) == 2)
 
     def test_smoke_dataset_with_augmentations(self):
         params_with_augs = {**self.transform_params, **self.default_dataset_params}
@@ -84,8 +82,7 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
             sample = d[0]
 
             # expected depth map is (200, 200) and only flipped
-            self.assertTrue(sample.depth_map.size == (h_out, w_out))
-            self.assertTrue(isinstance(sample.depth_map.getpixel((0, 0)), int))
+            self.assertTrue(sample.depth_map.shape == (h_out, w_out))
 
             expected_dm = np.zeros((h_out, w_out))
             expected_dm[: h_out // 2, ...] += 1
@@ -94,8 +91,7 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
             self.assertTrue(np.allclose(sample.depth_map, expected_dm))
 
             # expected image is (200, 200)
-            self.assertTrue(sample.image.size == (h_out, w_out))
-            self.assertTrue(len(sample.image.getpixel((0, 0))) == 3)
+            self.assertTrue(sample.image.shape == (h_out, w_out, 3))
 
             # and invert(vflip(img)) == img
             expected_image = np.zeros((h_out, w_out, 3))

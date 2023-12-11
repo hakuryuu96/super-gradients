@@ -60,7 +60,7 @@ class AlbumentationsAdaptor(TransformsPipelineAdaptorBase):
             sample = {"image": np.array(sample.image), "mask": np.array(sample.mask)}
         elif self.sample_type == SampleType.DEPTH_ESTIMATION:
             # here "mask" is used instead of "depth_map", label_fileds in A.Compose worth being discussed
-            sample = {"image": np.array(sample.image), "mask": np.array(sample.depth_map)}
+            sample = {"image": sample.image, "mask": sample.depth_map}
         else:
             sample = {"image": np.array(sample)}
         return sample
@@ -84,7 +84,7 @@ class AlbumentationsAdaptor(TransformsPipelineAdaptorBase):
             sample = SegmentationSample(image=Image.fromarray(sample["image"]), mask=Image.fromarray(sample["mask"]))
 
         elif self.sample_type == SampleType.DEPTH_ESTIMATION:
-            sample = DepthEstimationSample(image=Image.fromarray(sample["image"]), depth_map=Image.fromarray(sample["mask"]))
+            sample = DepthEstimationSample(image=sample["image"], depth_map=sample["mask"])
 
         else:
             sample = sample["image"]

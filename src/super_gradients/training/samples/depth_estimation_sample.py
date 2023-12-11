@@ -1,9 +1,7 @@
 import dataclasses
-from typing import Union
 
 import numpy as np
-import torch
-from PIL.Image import Image
+
 
 __all__ = ["DepthEstimationSample"]
 
@@ -14,15 +12,15 @@ class DepthEstimationSample:
     A dataclass representing a single depth estimation sample.
     Contains input image and depth map.
 
-    :param image:              Image of [H, W, (C if colorful)] shape.
+    :param image:              np.ndarray, Image of [H, W, (C if colorful)] shape.
     :param depth_map:          Depth map of [H, W] shape.
     """
 
     __slots__ = ["image", "depth_map"]
 
-    image: Union[np.ndarray, torch.Tensor]
-    depth_map: Union[np.ndarray, torch.Tensor]
+    image: np.ndarray
+    depth_map: np.ndarray
 
-    def __init__(self, image: Union[np.ndarray, torch.Tensor, Image], depth_map: Union[np.ndarray, torch.Tensor, Image]):
+    def __init__(self, image: np.ndarray, depth_map: np.ndarray):
         self.image = image
         self.depth_map = depth_map
