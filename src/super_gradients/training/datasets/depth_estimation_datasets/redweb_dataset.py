@@ -38,15 +38,9 @@ class ReDWebDepthEstimationDataset(AbstractDepthEstimationDataset):
         self._data_sanity_check(images_path, targets_path)
 
         sorted_images = sorted([os.path.join(images_path, file) for file in os.listdir(images_path)])
-
         sorted_targets = sorted([os.path.join(targets_path, file) for file in os.listdir(targets_path)])
 
         self.pair_paths = list(zip(sorted_images, sorted_targets))
-
-    def _get_sorted_paths_from_folder(self, path: str, file_extension: str) -> List[str]:
-        data_paths = sorted([os.path.join(path, f"{name}.{file_extension}") for name in os.listdir(path)])
-
-        return data_paths
 
     def _data_sanity_check(self, image_path: str, target_path: str) -> None:
         # separating name and extension
@@ -67,7 +61,6 @@ class ReDWebDepthEstimationDataset(AbstractDepthEstimationDataset):
         image_path, depth_map_path = self.pair_paths[index]
 
         image = cv2.imread(image_path, cv2.IMREAD_COLOR)
-
         depth_map = cv2.imread(depth_map_path, cv2.IMREAD_GRAYSCALE)
 
         return DepthEstimationSample(image=image, depth_map=depth_map)
