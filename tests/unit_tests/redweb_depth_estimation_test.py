@@ -12,13 +12,7 @@ from super_gradients.training.samples.depth_estimation_sample import DepthEstima
 class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
     def setUp(self) -> None:
         self.rw_data_dir = str(Path(__file__).parent.parent / "data" / "tinyredweb")
-        self.default_dataset_params = {
-            "data_dir": self.rw_data_dir,
-            "images_dir": "Imgs",
-            "targets_dir": "RDs",
-            "image_extension": "jpg",
-            "target_extension": "png",
-        }
+        self.default_dataset_params = {"data_dir": self.rw_data_dir, "images_dir": "Imgs", "targets_dir": "RDs"}
         self.transform_params = {
             "transforms": [
                 {
@@ -49,6 +43,29 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
         self.assertTrue(isinstance(d[0], DepthEstimationSample))
         self.assertTrue(isinstance(d[1], DepthEstimationSample))
 
+    def test_data_sanity_check_raise(self):
+        with tempfile.TemporaryDirectory() as tmp_dirname:
+            data_dir = os.path.join(tmp_dirname, "redwebtmp")
+            os.mkdir(data_dir)
+            os.mkdir(os.path.join(data_dir, "Imgs"))
+            os.mkdir(os.path.join(data_dir, "RDs"))
+
+            image = np.zeros((100, 100, 3), dtype=np.uint8)
+
+            cv2.imwrite(os.path.join(data_dir, "Imgs", "test1.png"), image)
+            cv2.imwrite(os.path.join(data_dir, "Imgs", "test2.png"), image)
+            cv2.imwrite(os.path.join(data_dir, "Imgs", "test3.png"), image)
+
+            cv2.imwrite(os.path.join(data_dir, "RDs", "test1.png"), image)
+
+            init_params = {**self.default_dataset_params}
+            init_params["data_dir"] = data_dir
+            with self.assertRaises(RuntimeError) as context:
+                ReDWebDepthEstimationDataset(**init_params)
+            self.assertEquals(
+                "2 dataset elements don't have image or target pairs in data folder. Check the following names: test2, test3.", str(context.exception)
+            )
+
     def test_dataset_augmentations_correctness(self):
         # create small sample dataset
         with tempfile.TemporaryDirectory() as tmp_dirname:
@@ -73,7 +90,6 @@ class ReDWebDepthEstimationDatasetTest(unittest.TestCase):
             params_with_augs = {**self.transform_params, **self.default_dataset_params}
 
             params_with_augs["data_dir"] = data_dir
-            params_with_augs["image_extension"] = "png"
             params_with_augs["transforms"][0]["Albumentations"]["Compose"]["transforms"].insert(
                 0, {"Resize": {"p": 1.0, "height": h_out, "width": w_out, "interpolation": cv2.INTER_NEAREST}}
             )

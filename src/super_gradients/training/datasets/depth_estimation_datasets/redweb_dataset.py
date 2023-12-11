@@ -25,33 +25,49 @@ class ReDWebDepthEstimationDataset(AbstractDepthEstimationDataset):
     """
 
     @resolve_param("transforms", factory=TransformsFactory())
-    def __init__(
-        self,
-        data_dir: str,
-        transforms: List[AbstractDepthEstimationTransform] = [],
-        images_dir: str = "Imgs",
-        targets_dir: str = "RDs",
-        image_extension: str = "jpg",
-        target_extension: str = "png",
-    ):
+    def __init__(self, data_dir: str, transforms: List[AbstractDepthEstimationTransform] = [], images_dir: str = "Imgs", targets_dir: str = "RDs"):
         """ """
         super().__init__(transforms=transforms)
         self.data_dir = data_dir
         self.images_dir = images_dir
         self.targets_dir = targets_dir
-        self.image_extension = image_extension
-        self.target_extension = target_extension
 
-        self.pair_names = [name.split(".")[0] for name in os.listdir(os.path.join(self.data_dir, self.targets_dir))]
+        images_path = os.path.join(self.data_dir, self.images_dir)
+        targets_path = os.path.join(self.data_dir, self.targets_dir)
+
+        self._data_sanity_check(images_path, targets_path)
+
+        sorted_images = sorted([os.path.join(images_path, file) for file in os.listdir(images_path)])
+
+        sorted_targets = sorted([os.path.join(targets_path, file) for file in os.listdir(targets_path)])
+
+        self.pair_paths = list(zip(sorted_images, sorted_targets))
+
+    def _get_sorted_paths_from_folder(self, path: str, file_extension: str) -> List[str]:
+        data_paths = sorted([os.path.join(path, f"{name}.{file_extension}") for name in os.listdir(path)])
+
+        return data_paths
+
+    def _data_sanity_check(self, image_path: str, target_path: str) -> None:
+        # separating name and extension
+        image_names = [x.split(".")[0] for x in os.listdir(image_path)]
+        target_names = [x.split(".")[0] for x in os.listdir(target_path)]
+
+        unique_image_names = set(image_names)
+        unique_target_names = set(target_names)
+
+        diff = unique_image_names.symmetric_difference(unique_target_names)
+        if len(diff) > 0:
+            raise RuntimeError(f"{len(diff)} dataset elements don't have image or target pairs in data folder. Check the following names: {', '.join(diff)}.")
 
     def __len__(self):
-        return len(self.pair_names)
+        return len(self.pair_paths)
 
     def load_sample(self, index: int) -> DepthEstimationSample:
-        pair_name = self.pair_names[index]
+        image_path, depth_map_path = self.pair_paths[index]
 
-        image = cv2.imread(os.path.join(self.data_dir, self.images_dir, f"{pair_name}.{self.image_extension}"), cv2.IMREAD_COLOR)
+        image = cv2.imread(image_path, cv2.IMREAD_COLOR)
 
-        depth_map = cv2.imread(os.path.join(self.data_dir, self.targets_dir, f"{pair_name}.{self.target_extension}"), cv2.IMREAD_GRAYSCALE)
+        depth_map = cv2.imread(depth_map_path, cv2.IMREAD_GRAYSCALE)
 
         return DepthEstimationSample(image=image, depth_map=depth_map)
